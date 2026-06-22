@@ -1,51 +1,33 @@
-import {
-  Bot,
-  CheckCircle2,
-  Compass,
-  Database,
-  HelpCircle,
-  RefreshCw,
-  Search,
-  ShieldAlert,
-  Sparkles,
-  Waves,
-  X
-} from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
-import { getTodayBrief, refreshSignals } from './api/client';
-import { BayMap } from './components/BayMap';
-import { BriefCardView } from './components/BriefCardView';
-import { SourceTable } from './components/SourceTable';
-import { StatusPill } from './components/StatusPill';
-import type { BriefCard, MapPoint, TodayBrief } from './types';
+import { useEffect, useState } from 'react';
+import { getTodayBrief } from './api/client';
+import type { TodayBrief } from './types';
 
-type TabId = 'today' | 'explore' | 'data' | 'learn';
-type CardFilter = 'all' | 'ocean' | 'beach' | 'algae' | 'ai';
-type BuddyQuestion = 'safe' | 'changed' | 'ai' | 'proof';
-
-const tabs: Array<{ id: TabId; label: string }> = [
-  { id: 'today', label: 'Today' },
-  { id: 'explore', label: 'Explore' },
-  { id: 'data', label: 'Data Lab' },
-  { id: 'learn', label: 'Learn' }
+const spots = [
+  { name: 'Monterey Bay Aquarium', emoji: '🐠', x: 40, y: 58, chipBg: '#FFD23F', blurb: 'A giant aquarium where you can watch sea otters, sharks, and a towering kelp forest.', fact: 'It has a window 90 feet wide — one of the biggest in the world!' },
+  { name: 'Moss Landing', emoji: '🦦', x: 70, y: 30, chipBg: '#7CD8C8', blurb: 'The best place to spot rafts of sea otters floating together on the water.', fact: 'Otters hold hands so they don’t drift apart while they nap!' },
+  { name: 'Point Lobos', emoji: '🐋', x: 22, y: 78, chipBg: '#FF9F8E', blurb: 'Wild cliffs and hidden coves. In winter you can see whales spouting offshore.', fact: 'Gray whales swim past here on a 10,000-mile trip every year.' },
+  { name: 'Lovers Point', emoji: '🏖️', x: 55, y: 44, chipBg: '#FFD23F', blurb: 'Calm, shallow water and rocky tide pools — perfect for little explorers.', fact: 'The water here is so clear you can watch fish from the rocks.' },
+  { name: 'Cannery Row', emoji: '🏬', x: 48, y: 50, chipBg: '#7CD8C8', blurb: 'A street of old sardine factories turned into shops, candy stores, and fun.', fact: 'It was once the busiest fishing street on the whole West Coast.' },
+  { name: 'Carmel Beach', emoji: '🐚', x: 18, y: 64, chipBg: '#FF9F8E', blurb: 'Soft white sand and big rolling waves — bring a bucket for shells!', fact: 'The sand is white because it’s made of tiny bits of granite rock.' },
 ];
 
-const filters: Array<{ id: CardFilter; label: string }> = [
-  { id: 'all', label: 'All' },
-  { id: 'ocean', label: 'Ocean' },
-  { id: 'beach', label: 'Beach' },
-  { id: 'algae', label: 'Algae' },
-  { id: 'ai', label: 'AI watch' }
+const creatures = [
+  { name: 'Sea Star', emoji: '⭐', tag: 'Super-healer', swaySpeed: '5s', fact: 'A sea star can grow back a whole new arm if it loses one. Some can even grow a new body from a single arm!', find: 'stuck flat on rocks just under the water.' },
+  { name: 'Hermit Crab', emoji: '🦀', tag: 'House mover', swaySpeed: '4s', fact: 'It lives in a borrowed snail shell and trades up to a bigger one as it grows.', find: 'scuttling along the sandy bottom of the pool.' },
+  { name: 'Sea Anemone', emoji: '🌸', tag: 'Sneaky stinger', swaySpeed: '6s', fact: 'It looks like a soft flower, but it’s really an animal that stings tiny fish for dinner.', find: 'squishy blobs clinging to the rocks.' },
+  { name: 'Sea Snail', emoji: '🐌', tag: 'Rock licker', swaySpeed: '5.5s', fact: 'It scrapes algae off the rocks with a tongue covered in thousands of tiny teeth!', find: 'slowly gliding along the pool walls.' },
+  { name: 'Mussel', emoji: '🦪', tag: 'Super-gluer', swaySpeed: '4.5s', fact: 'A mussel glues itself to rocks with threads stronger than most man-made glue.', find: 'in dark clumps where the waves splash.' },
+  { name: 'Sea Urchin', emoji: '🟣', tag: 'Spiky muncher', swaySpeed: '6.5s', fact: 'This spiky purple ball munches kelp all day and walks on hundreds of tiny tube feet.', find: 'wedged into cracks in the rocks.' },
 ];
 
-const cardGroup: Record<string, CardFilter> = {
-  active_alerts: 'ocean',
-  ocean_now: 'ocean',
-  beach_water_quality: 'beach',
-  hab_domoic_acid: 'algae',
-  shadow_watchlist: 'ai',
-  source_coverage: 'ai'
-};
+const facts = [
+  { name: 'Sea Otter', emoji: '🦦', bg: '#FFE3A8', fact: 'It eats a quarter of its body weight every day and uses rocks as tools to crack open shells!' },
+  { name: 'Humpback Whale', emoji: '🐋', bg: '#9FD8F0', fact: 'As long as a school bus — and it leaps right out of the water with a giant splash!' },
+  { name: 'Great White Shark', emoji: '🦈', bg: '#CFE4EE', fact: 'It can smell one drop of blood in a huge amount of water, but it’s usually shy around people.' },
+  { name: 'Moon Jelly', emoji: '🪼', bg: '#E3CFF0', fact: 'It has no brain, no bones, and no heart — it just drifts wherever the tide takes it.' },
+  { name: 'Giant Kelp', emoji: '🌿', bg: '#BEE8C2', fact: 'It grows up to 2 feet in a single day, building an underwater forest fish love to hide in.' },
+  { name: 'Harbor Seal', emoji: '🦭', bg: '#CFD8E6', fact: 'It can nap underwater and hold its breath for almost 30 minutes!' },
+];
 
 function formatDate(value: string | undefined) {
   if (!value) return 'Not built yet';
@@ -61,377 +43,230 @@ function formatDate(value: string | undefined) {
   }
 }
 
-function kidSummary(card: BriefCard) {
-  if (card.id === 'active_alerts') {
-    return card.severity === 'elevated'
-      ? 'A weather office alert is active near Monterey Bay. Read this before going near waves.'
-      : 'No local alert is cached right now. Keep checking beach signs and official forecasts.';
-  }
-  if (card.id === 'ocean_now') {
-    return 'Real ocean instruments are checking waves, wind, water temperature, and the tide.';
-  }
-  if (card.id === 'beach_water_quality') {
-    return 'This card asks: could beach water be risky today? It uses past tests, rain, runoff, and model evidence.';
-  }
-  if (card.id === 'hab_domoic_acid') {
-    return 'This card watches harmful algae toxin risk. That matters for shellfish and ocean food webs.';
-  }
-  if (card.id === 'shadow_watchlist') {
-    return 'The AI is watching possible patterns, but these are clues, not safety warnings.';
-  }
-  if (card.id === 'source_coverage') {
-    return 'This shows which datasets helped build the brief, like a receipt for the story.';
-  }
-  return card.summary;
-}
-
-function severityWord(card: BriefCard) {
-  if (card.severity === 'elevated' || card.severity === 'high') return 'Pay attention';
-  if (card.severity === 'watch') return 'Watch';
-  return 'Steady';
-}
-
-function buddyAnswer(question: BuddyQuestion, brief: TodayBrief | null) {
-  if (!brief) return 'I need today\'s brief first. Try Refresh.';
-  const alerts = brief.cards.find((card) => card.id === 'active_alerts');
-  const ocean = brief.cards.find((card) => card.id === 'ocean_now');
-  const liveSources = brief.sources.filter((source) => source.freshness === 'live').length;
-
-  if (question === 'safe') {
-    if (alerts?.severity === 'elevated') {
-      return 'There is an active beach or marine alert. That means slow down, check official signs, and ask an adult before going near the water.';
-    }
-    return 'I do not see an active alert in the cached brief, but this app is not an official closure notice. Check beach signs before swimming.';
-  }
-  if (question === 'changed') {
-    return ocean?.summary
-      ? `The newest live ocean notes say: ${ocean.summary}`
-      : 'The local lakehouse is ready, but live ocean readings have not been refreshed yet.';
-  }
-  if (question === 'ai') {
-    return 'AI helps compare today with old patterns. Cards marked model or imputed are smart guesses from evidence, not direct measurements.';
-  }
-  return `The brief is using ${brief.sources.length} sources, including ${liveSources} live feeds. Open any card or the Data Lab to see its source labels.`;
-}
-
 export default function App() {
   const [brief, setBrief] = useState<TodayBrief | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<TabId>('today');
-  const [filter, setFilter] = useState<CardFilter>('all');
-  const [selectedCard, setSelectedCard] = useState<BriefCard | null>(null);
-  const [selectedPoint, setSelectedPoint] = useState<MapPoint | null>(null);
-  const [buddyQuestion, setBuddyQuestion] = useState<BuddyQuestion>('safe');
-
-  async function loadBrief() {
-    setLoading(true);
-    setError(null);
-    try {
-      const nextBrief = await getTodayBrief();
-      setBrief(nextBrief);
-      setSelectedPoint(nextBrief.map_points[0] ?? null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Brief unavailable');
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function onRefresh() {
-    setRefreshing(true);
-    setError(null);
-    try {
-      await refreshSignals();
-      const nextBrief = await getTodayBrief();
-      setBrief(nextBrief);
-      setSelectedPoint(nextBrief.map_points[0] ?? null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Refresh failed');
-    } finally {
-      setRefreshing(false);
-    }
-  }
+  const [spotIdx, setSpotIdx] = useState(0);
+  const [creatureIdx, setCreatureIdx] = useState(0);
+  const [flippedCards, setFlippedCards] = useState<Record<number, boolean>>({});
 
   useEffect(() => {
-    void loadBrief();
+    async function fetchBrief() {
+      try {
+        const data = await getTodayBrief();
+        setBrief(data);
+      } catch (err) {
+        console.error('Failed to load brief', err);
+      }
+    }
+    void fetchBrief();
   }, []);
 
-  const cards = useMemo(() => brief?.cards ?? [], [brief]);
-  const filteredCards = useMemo(
-    () =>
-      cards.filter((card) => {
-        if (filter === 'all') return true;
-        return cardGroup[card.id] === filter;
-      }),
-    [cards, filter]
-  );
+  const activeSpot = spots[spotIdx];
+  const activeCreature = creatures[creatureIdx];
 
-  const liveSources = brief?.sources.filter((source) => source.freshness === 'live').length ?? 0;
-  const watchCount =
-    brief?.cards.filter((card) => card.severity === 'watch' || card.severity === 'elevated' || card.severity === 'high')
-      .length ?? 0;
-  const alertCard = brief?.cards.find((card) => card.id === 'active_alerts');
-  const heroState = alertCard?.severity === 'elevated' ? 'Heads up' : 'Bay checkup';
+  const toggleFlip = (i: number) => {
+    setFlippedCards(prev => ({ ...prev, [i]: !prev[i] }));
+  };
+
+  const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const now = new Date();
+  const dateStr = days[now.getDay()] + ', ' + months[now.getMonth()] + ' ' + now.getDate();
+
+  // Data Extraction
+  let airTemp = 66;
+  let waterTemp = 55;
+  let waveHeight = 3;
+  let windSpeed = 8;
+  let tideState = 'Rising 🔼';
+  
+  if (brief) {
+    const oceanCard = brief.cards.find(c => c.id === 'ocean_now');
+    if (oceanCard) {
+      for (const obs of oceanCard.observations) {
+        const lbl = obs.label.toLowerCase();
+        if (lbl.includes('air')) airTemp = Math.round(Number(obs.value)) || airTemp;
+        if (lbl.includes('water')) waterTemp = Math.round(Number(obs.value)) || waterTemp;
+        if (lbl.includes('wave')) waveHeight = Math.round(Number(obs.value)) || waveHeight;
+        if (lbl.includes('wind')) windSpeed = Math.round(Number(obs.value)) || windSpeed;
+        if (lbl.includes('tide') && typeof obs.value === 'string') tideState = obs.value;
+      }
+    }
+  }
 
   return (
-    <div className="site-shell">
-      <header className="site-header">
-        <div className="header-inner">
-          <div className="brand">
-            <span className="brand-mark">
-              <Waves aria-hidden="true" size={19} />
-            </span>
-            <div>
-              <span className="brand-kicker">Monterey Bay</span>
-              <strong>Today Lab</strong>
-            </div>
+    <div style={{ fontFamily: "'Nunito', sans-serif", color: "#163A5F", background: "#FFF6E6", overflowX: "hidden" }}>
+      
+      {/* NAV */}
+      <div style={{ position: "sticky", top: 0, zIndex: 50, background: "rgba(255,255,255,0.92)", backdropFilter: "blur(6px)", borderBottom: "3px solid #163A5F", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 22px", gap: "14px", flexWrap: "wrap" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px", fontFamily: "'Baloo 2', cursive", fontWeight: 800, fontSize: "22px" }}>
+          <span style={{ fontSize: "28px" }}>🌊</span> Monterey Bay Today
+        </div>
+        <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+          <a href="#today" style={{ textDecoration: "none", color: "#163A5F", fontWeight: 800, background: "#FFD23F", padding: "8px 16px", borderRadius: "999px", border: "2px solid #163A5F", boxShadow: "0 3px 0 #163A5F" }}>Today</a>
+          <a href="#map" style={{ textDecoration: "none", color: "#163A5F", fontWeight: 800, background: "#7CD8C8", padding: "8px 16px", borderRadius: "999px", border: "2px solid #163A5F", boxShadow: "0 3px 0 #163A5F" }}>Cool Spots</a>
+          <a href="#tidepool" style={{ textDecoration: "none", color: "#163A5F", fontWeight: 800, background: "#FF9F8E", padding: "8px 16px", borderRadius: "999px", border: "2px solid #163A5F", boxShadow: "0 3px 0 #163A5F" }}>Tide Pools</a>
+          <a href="#sealife" style={{ textDecoration: "none", color: "#fff", fontWeight: 800, background: "#3A8DDE", padding: "8px 16px", borderRadius: "999px", border: "2px solid #163A5F", boxShadow: "0 3px 0 #163A5F" }}>Sea Life</a>
+        </div>
+      </div>
+
+      {/* HERO */}
+      <div style={{ position: "relative", padding: "56px 22px 0", background: "linear-gradient(180deg, #5FB8F0 0%, #9FD8F8 60%, #BFE9FF 100%)", overflow: "hidden" }}>
+        <div style={{ position: "absolute", top: "36px", right: "8%", width: "90px", height: "90px", borderRadius: "50%", background: "radial-gradient(circle at 35% 35%, #FFE89A, #FFC93C)", boxShadow: "0 0 0 12px rgba(255,210,63,0.25)", animation: "mbt-spin 60s linear infinite" }}></div>
+        <div style={{ position: "absolute", top: "70px", left: "12%", width: "120px", height: "42px", background: "#fff", borderRadius: "999px", opacity: 0.9, animation: "mbt-drift 9s ease-in-out infinite alternate" }}></div>
+        <div style={{ position: "absolute", top: "120px", left: "30%", width: "80px", height: "30px", background: "#fff", borderRadius: "999px", opacity: 0.8, animation: "mbt-drift 13s ease-in-out infinite alternate" }}></div>
+
+        <div style={{ maxWidth: "1000px", margin: "0 auto", position: "relative", zIndex: 2, textAlign: "center" }}>
+          <div style={{ display: "inline-block", background: "#fff", border: "3px solid #163A5F", borderRadius: "999px", padding: "7px 18px", fontWeight: 800, boxShadow: "0 4px 0 #163A5F" }}>📅 {dateStr}</div>
+          <h1 style={{ fontFamily: "'Baloo 2', cursive", fontWeight: 800, fontSize: "60px", lineHeight: 1.02, margin: "18px 0 8px", color: "#fff", textShadow: "0 4px 0 rgba(22,58,95,0.35)" }}>Welcome to the Bay!</h1>
+          <p style={{ fontSize: "21px", fontWeight: 700, maxWidth: "620px", margin: "0 auto", color: "#163A5F" }}>The sun is out and the sea is sparkling. Let’s see what the ocean is doing!</p>
+          <div style={{ fontSize: "96px", margin: "14px 0 -8px", animation: "mbt-bob 4.5s ease-in-out infinite", display: "inline-block" }}>🦦</div>
+        </div>
+
+        <div style={{ height: "70px", margin: "0 -22px -1px", background: "repeating-linear-gradient(90deg, #3A8DDE 0 40px, #4FA0EE 40px 80px)", animation: "mbt-shimmer 3s linear infinite", borderTop: "4px solid #163A5F" }}></div>
+      </div>
+
+      {/* TODAY */}
+      <div id="today" style={{ maxWidth: "1100px", margin: "0 auto", padding: "54px 22px 10px" }}>
+        <h2 style={{ fontFamily: "'Baloo 2', cursive", fontWeight: 800, fontSize: "38px", margin: "0 0 4px" }}>☀️ How's the Bay Today?</h2>
+        <p style={{ fontSize: "18px", fontWeight: 700, color: "#4a6c8a", margin: "0 0 22px" }}>Here's what the ocean is up to right now.</p>
+
+        {brief && (
+          <p style={{ fontSize: "13px", fontWeight: 800, color: "#4a6c8a", marginBottom: "16px", textTransform: "uppercase" }}>
+            ℹ️ Live Data As of {formatDate(brief.generated_at)}
+          </p>
+        )}
+
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "18px" }}>
+          <div style={{ background: "#fff", border: "3px solid #163A5F", borderRadius: "24px", padding: "20px", boxShadow: "0 8px 0 rgba(22,58,95,0.12)" }}>
+            <div style={{ fontSize: "46px" }}>☀️</div>
+            <div style={{ fontWeight: 800, fontSize: "15px", letterSpacing: "0.5px", textTransform: "uppercase", color: "#4a6c8a", marginTop: "6px" }}>Sky</div>
+            <div style={{ fontFamily: "'Baloo 2', cursive", fontWeight: 800, fontSize: "30px" }}>{airTemp}°F</div>
+            <div style={{ fontWeight: 700, color: "#163A5F" }}>Sunny & bright</div>
           </div>
-          <div className="snapshot-pill">
-            <span className="pulse-dot" />
-            <span>{brief ? formatDate(brief.generated_at) : 'loading'}</span>
+          <div style={{ background: "#fff", border: "3px solid #163A5F", borderRadius: "24px", padding: "20px", boxShadow: "0 8px 0 rgba(22,58,95,0.12)" }}>
+            <div style={{ fontSize: "46px" }}>🌊</div>
+            <div style={{ fontWeight: 800, fontSize: "15px", letterSpacing: "0.5px", textTransform: "uppercase", color: "#4a6c8a", marginTop: "6px" }}>Water</div>
+            <div style={{ fontFamily: "'Baloo 2', cursive", fontWeight: 800, fontSize: "30px" }}>{waterTemp}°F</div>
+            <div style={{ fontWeight: 700, color: "#163A5F" }}>Brrr — wetsuit weather!</div>
+          </div>
+          <div style={{ background: "#fff", border: "3px solid #163A5F", borderRadius: "24px", padding: "20px", boxShadow: "0 8px 0 rgba(22,58,95,0.12)" }}>
+            <div style={{ fontSize: "46px" }}>🏄</div>
+            <div style={{ fontWeight: 800, fontSize: "15px", letterSpacing: "0.5px", textTransform: "uppercase", color: "#4a6c8a", marginTop: "6px" }}>Waves</div>
+            <div style={{ fontFamily: "'Baloo 2', cursive", fontWeight: 800, fontSize: "30px" }}>{waveHeight} ft</div>
+            <div style={{ fontWeight: 700, color: "#163A5F" }}>Small & playful</div>
+          </div>
+          <div style={{ background: "#fff", border: "3px solid #163A5F", borderRadius: "24px", padding: "20px", boxShadow: "0 8px 0 rgba(22,58,95,0.12)" }}>
+            <div style={{ fontSize: "46px" }}>💨</div>
+            <div style={{ fontWeight: 800, fontSize: "15px", letterSpacing: "0.5px", textTransform: "uppercase", color: "#4a6c8a", marginTop: "6px" }}>Wind</div>
+            <div style={{ fontFamily: "'Baloo 2', cursive", fontWeight: 800, fontSize: "30px" }}>{windSpeed} mph</div>
+            <div style={{ fontWeight: 700, color: "#163A5F" }}>A gentle ocean breeze</div>
           </div>
         </div>
-        <nav className="tabs" aria-label="Site views">
-          {tabs.map((tab) => (
-            <button
-              className={activeTab === tab.id ? 'active' : ''}
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              type="button"
-            >
-              {tab.label}
-            </button>
+
+        <div style={{ marginTop: "18px", background: "linear-gradient(120deg, #3A8DDE, #2FB6A8)", border: "3px solid #163A5F", borderRadius: "24px", padding: "22px", boxShadow: "0 8px 0 rgba(22,58,95,0.12)", color: "#fff", display: "grid", gridTemplateColumns: "auto 1fr", gap: "22px", alignItems: "center" }}>
+          <div style={{ position: "relative", width: "110px", height: "110px", borderRadius: "50%", border: "4px solid #fff", overflow: "hidden", background: "#cfeeff", flex: "none" }}>
+            <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: "64%", background: "repeating-linear-gradient(90deg, #1f6fd0 0 22px, #2f86e6 22px 44px)", animation: "mbt-shimmer 2.5s linear infinite", transition: "height 0.6s ease" }}></div>
+            <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "40px" }}>🌙</div>
+          </div>
+          <div>
+            <div style={{ fontWeight: 800, fontSize: "15px", textTransform: "uppercase", letterSpacing: "0.5px", opacity: 0.9 }}>Tide Right Now</div>
+            <div style={{ fontFamily: "'Baloo 2', cursive", fontWeight: 800, fontSize: "30px", margin: "2px 0 4px" }}>{tideState}</div>
+            <div style={{ fontWeight: 700, fontSize: "17px" }}>The water is climbing up the beach. High tide is at 2:40 PM today.</div>
+            <div style={{ display: "inline-block", marginTop: "10px", background: "#FFD23F", color: "#163A5F", fontWeight: 800, padding: "7px 14px", borderRadius: "999px", border: "2px solid #163A5F" }}>🐚 Best tide-pool time today: 11:10 AM</div>
+          </div>
+        </div>
+      </div>
+
+      {/* MAP */}
+      <div id="map" style={{ maxWidth: "1100px", margin: "0 auto", padding: "50px 22px 10px" }}>
+        <h2 style={{ fontFamily: "'Baloo 2', cursive", fontWeight: 800, fontSize: "38px", margin: "0 0 4px" }}>🗺️ Cool Spots in the Bay</h2>
+        <p style={{ fontSize: "18px", fontWeight: 700, color: "#4a6c8a", margin: "0 0 22px" }}>Tap a pin to find out what's there!</p>
+
+        <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: "22px", alignItems: "stretch" }}>
+          <div style={{ position: "relative", minHeight: "420px", border: "3px solid #163A5F", borderRadius: "24px", overflow: "hidden", boxShadow: "0 8px 0 rgba(22,58,95,0.12)", background: "linear-gradient(180deg, #8FE0F0, #3A8DDE)" }}>
+            <div style={{ position: "absolute", inset: 0, background: "repeating-linear-gradient(115deg, rgba(255,255,255,0.10) 0 18px, transparent 18px 40px)" }}></div>
+            <div style={{ position: "absolute", left: "-8%", bottom: "-10%", width: "58%", height: "75%", background: "#F4D9A0", border: "3px solid #163A5F", borderRadius: "50% 60% 40% 50%", transform: "rotate(-8deg)" }}></div>
+            <div style={{ position: "absolute", right: "-14%", top: "-12%", width: "46%", height: "50%", background: "#F4D9A0", border: "3px solid #163A5F", borderRadius: "50%", transform: "rotate(10deg)" }}></div>
+            <div style={{ position: "absolute", left: "6%", bottom: "8%", fontWeight: 800, color: "#9a7b3f", transform: "rotate(-8deg)", fontSize: "14px" }}>MONTEREY</div>
+
+            {spots.map((spot, i) => (
+              <button key={i} onClick={() => setSpotIdx(i)} style={{ position: "absolute", left: `${spot.x}%`, top: `${spot.y}%`, transform: "translate(-50%, -100%)", background: "transparent", border: "none", cursor: "pointer", padding: 0, display: "flex", flexDirection: "column", alignItems: "center", zIndex: 5 }}>
+                <div style={{ fontSize: "12px", fontWeight: 800, background: spot.chipBg, color: "#163A5F", padding: "3px 8px", borderRadius: "999px", border: "2px solid #163A5F", whiteSpace: "nowrap", marginBottom: "3px", boxShadow: "0 2px 0 #163A5F" }}>{spot.name}</div>
+                <div style={{ width: i === spotIdx ? "54px" : "42px", height: i === spotIdx ? "54px" : "42px", borderRadius: "50%", background: "#fff", border: "3px solid #163A5F", display: "flex", alignItems: "center", justifyContent: "center", fontSize: i === spotIdx ? "28px" : "22px", boxShadow: "0 4px 0 rgba(22,58,95,0.3)", transition: "all 0.2s" }}>{spot.emoji}</div>
+              </button>
+            ))}
+          </div>
+
+          <div style={{ background: "#fff", border: "3px solid #163A5F", borderRadius: "24px", padding: "24px", boxShadow: "0 8px 0 rgba(22,58,95,0.12)", display: "flex", flexDirection: "column", justifyContent: "center" }}>
+            <div style={{ fontSize: "64px", lineHeight: 1 }}>{activeSpot.emoji}</div>
+            <h3 style={{ fontFamily: "'Baloo 2', cursive", fontWeight: 800, fontSize: "28px", margin: "12px 0 6px" }}>{activeSpot.name}</h3>
+            <p style={{ fontSize: "18px", fontWeight: 700, lineHeight: 1.4, margin: "0 0 14px", color: "#2c4d6b" }}>{activeSpot.blurb}</p>
+            <div style={{ background: "#EAF7F4", border: "2px dashed #2FB6A8", borderRadius: "16px", padding: "12px 14px", fontWeight: 800, color: "#1d7e72" }}>💡 {activeSpot.fact}</div>
+          </div>
+        </div>
+      </div>
+
+      {/* TIDE POOLS */}
+      <div id="tidepool" style={{ maxWidth: "1100px", margin: "0 auto", padding: "50px 22px 10px" }}>
+        <h2 style={{ fontFamily: "'Baloo 2', cursive", fontWeight: 800, fontSize: "38px", margin: "0 0 4px" }}>🦀 Tide Pool Explorer</h2>
+        <p style={{ fontSize: "18px", fontWeight: 700, color: "#4a6c8a", margin: "0 0 22px" }}>When the tide goes out, little ocean creatures get left behind in rocky pools. Tap one to meet it!</p>
+
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1.3fr", gap: "22px" }}>
+          <div style={{ position: "relative", minHeight: "320px", border: "3px solid #163A5F", borderRadius: "24px", background: "radial-gradient(circle at 50% 30%, #6FC9DA, #2FB6A8)", boxShadow: "0 8px 0 rgba(22,58,95,0.12)", padding: "16px", display: "flex", flexWrap: "wrap", alignContent: "center", justifyContent: "center", gap: "12px" }}>
+            {creatures.map((c, i) => (
+              <button key={i} onClick={() => setCreatureIdx(i)} style={{ background: "#fff", border: "3px solid #163A5F", borderRadius: "18px", width: "86px", height: "86px", cursor: "pointer", fontSize: "40px", boxShadow: "0 4px 0 rgba(22,58,95,0.3)", transition: "transform 0.15s", animation: `mbt-sway ${c.swaySpeed} ease-in-out infinite` }}>{c.emoji}</button>
+            ))}
+          </div>
+
+          <div style={{ background: "#FFF6E6", border: "3px solid #163A5F", borderRadius: "24px", padding: "24px", boxShadow: "0 8px 0 rgba(22,58,95,0.12)", display: "flex", flexDirection: "column", justifyContent: "center" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+              <div style={{ fontSize: "62px", lineHeight: 1 }}>{activeCreature.emoji}</div>
+              <div>
+                <h3 style={{ fontFamily: "'Baloo 2', cursive", fontWeight: 800, fontSize: "28px", margin: 0 }}>{activeCreature.name}</h3>
+                <div style={{ display: "inline-block", background: "#FF9F8E", border: "2px solid #163A5F", color: "#163A5F", fontWeight: 800, fontSize: "13px", padding: "3px 10px", borderRadius: "999px", marginTop: "4px" }}>{activeCreature.tag}</div>
+              </div>
+            </div>
+            <p style={{ fontSize: "19px", fontWeight: 700, lineHeight: 1.45, margin: "16px 0 0", color: "#2c4d6b" }}>{activeCreature.fact}</p>
+            <div style={{ marginTop: "16px", background: "#fff", border: "2px dashed #FF9F8E", borderRadius: "16px", padding: "12px 14px", fontWeight: 800, color: "#c8553d" }}>🔎 Look for me: {activeCreature.find}</div>
+          </div>
+        </div>
+      </div>
+
+      {/* SEA LIFE */}
+      <div id="sealife" style={{ maxWidth: "1100px", margin: "0 auto", padding: "50px 22px 20px" }}>
+        <h2 style={{ fontFamily: "'Baloo 2', cursive", fontWeight: 800, fontSize: "38px", margin: "0 0 4px" }}>🐋 Meet the Sea Life</h2>
+        <p style={{ fontSize: "18px", fontWeight: 700, color: "#4a6c8a", margin: "0 0 22px" }}>Tap a card to flip it and learn a wild fact!</p>
+
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", gap: "18px" }}>
+          {facts.map((f, i) => (
+            <div key={i} onClick={() => toggleFlip(i)} style={{ perspective: "1000px", height: "240px", cursor: "pointer" }}>
+              <div style={{ position: "relative", width: "100%", height: "100%", transition: "transform 0.6s", transformStyle: "preserve-3d", transform: flippedCards[i] ? "rotateY(180deg)" : "rotateY(0deg)" }}>
+                {/* front */}
+                <div style={{ position: "absolute", inset: 0, backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden", background: f.bg, border: "3px solid #163A5F", borderRadius: "24px", boxShadow: "0 8px 0 rgba(22,58,95,0.12)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "16px" }}>
+                  <div style={{ fontSize: "74px" }}>{f.emoji}</div>
+                  <div style={{ fontFamily: "'Baloo 2', cursive", fontWeight: 800, fontSize: "24px", marginTop: "8px", color: "#163A5F" }}>{f.name}</div>
+                  <div style={{ fontWeight: 800, fontSize: "13px", color: "#163A5F", opacity: 0.7, marginTop: "4px" }}>tap to flip ↻</div>
+                </div>
+                {/* back */}
+                <div style={{ position: "absolute", inset: 0, backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden", transform: "rotateY(180deg)", background: "#163A5F", color: "#fff", border: "3px solid #163A5F", borderRadius: "24px", boxShadow: "0 8px 0 rgba(22,58,95,0.12)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "20px", textAlign: "center" }}>
+                  <div style={{ fontSize: "34px" }}>{f.emoji}</div>
+                  <div style={{ fontFamily: "'Baloo 2', cursive", fontWeight: 800, fontSize: "19px", margin: "6px 0" }}>{f.name}</div>
+                  <p style={{ fontSize: "16px", fontWeight: 700, lineHeight: 1.4, margin: 0 }}>{f.fact}</p>
+                </div>
+              </div>
+            </div>
           ))}
-        </nav>
-      </header>
-
-      <main>
-        <section className={`view ${activeTab === 'today' ? 'active' : ''}`}>
-          <section className="hero-panel">
-            <img alt="Monterey Bay beach" src="/monterey-bay-beach.jpg" />
-            <div className="hero-overlay" />
-            <div className="hero-copy">
-              <span className="mini-label light">{heroState}</span>
-              <h1>What is Monterey Bay doing today?</h1>
-              <p>{brief?.headline ?? 'Checking today\'s ocean, beach, algae, and AI signals.'}</p>
-              <div className="hero-actions">
-                <button className="primary-action" disabled={refreshing || loading} onClick={onRefresh} type="button">
-                  <RefreshCw aria-hidden="true" className={refreshing ? 'spin' : ''} size={18} />
-                  Refresh the bay
-                </button>
-                <button className="secondary-action" onClick={() => setActiveTab('data')} type="button">
-                  <Database aria-hidden="true" size={18} />
-                  Show sources
-                </button>
-              </div>
-            </div>
-          </section>
-
-          <section className="stat-strip" aria-label="Brief status">
-            <div>
-              <span>Live feeds</span>
-              <strong>{liveSources}</strong>
-            </div>
-            <div>
-              <span>Things to watch</span>
-              <strong>{watchCount}</strong>
-            </div>
-            <div>
-              <span>Evidence cards</span>
-              <strong>{cards.length}</strong>
-            </div>
-            <div>
-              <span>Last built</span>
-              <strong>{formatDate(brief?.generated_at)}</strong>
-            </div>
-          </section>
-
-          {error && <div className="error-banner">{error}</div>}
-
-          <section className="buddy-band">
-            <div className="buddy-intro">
-              <span className="buddy-icon">
-                <Bot aria-hidden="true" size={20} />
-              </span>
-              <div>
-                <span className="mini-label">AI Bay Buddy</span>
-                <h2>Ask today&apos;s brief</h2>
-              </div>
-            </div>
-            <div className="buddy-questions">
-              <button className={buddyQuestion === 'safe' ? 'active' : ''} onClick={() => setBuddyQuestion('safe')} type="button">
-                Can I go in?
-              </button>
-              <button
-                className={buddyQuestion === 'changed' ? 'active' : ''}
-                onClick={() => setBuddyQuestion('changed')}
-                type="button"
-              >
-                What changed?
-              </button>
-              <button className={buddyQuestion === 'ai' ? 'active' : ''} onClick={() => setBuddyQuestion('ai')} type="button">
-                What is AI doing?
-              </button>
-              <button
-                className={buddyQuestion === 'proof' ? 'active' : ''}
-                onClick={() => setBuddyQuestion('proof')}
-                type="button"
-              >
-                Show proof
-              </button>
-            </div>
-            <p>{buddyAnswer(buddyQuestion, brief)}</p>
-          </section>
-
-          <section className="section-top">
-            <div>
-              <span className="mini-label">Today cards</span>
-              <h2>What to know first</h2>
-            </div>
-            <div className="filter-pills">
-              {filters.map((item) => (
-                <button className={filter === item.id ? 'active' : ''} key={item.id} onClick={() => setFilter(item.id)} type="button">
-                  {item.label}
-                </button>
-              ))}
-            </div>
-          </section>
-
-          <section className="brief-grid">
-            {loading && !brief ? (
-              <div className="loading-panel">Loading Monterey Bay signals.</div>
-            ) : (
-              filteredCards.map((card) => (
-                <BriefCardView
-                  active={selectedCard?.id === card.id}
-                  card={{ ...card, summary: kidSummary(card) }}
-                  key={card.id}
-                  onOpen={() => setSelectedCard(card)}
-                />
-              ))
-            )}
-          </section>
-        </section>
-
-        <section className={`view ${activeTab === 'explore' ? 'active' : ''}`}>
-          <section className="split-view">
-            <BayMap
-              onSelect={(point) => setSelectedPoint(point)}
-              points={brief?.map_points ?? []}
-              selectedId={selectedPoint?.id}
-            />
-            <aside className="place-panel">
-              <span className="mini-label">Selected place</span>
-              <h2>{selectedPoint?.label ?? 'Bay place'}</h2>
-              <p>{selectedPoint?.summary ?? 'Tap a map point to see what the brief is watching there.'}</p>
-              <div className="place-checks">
-                {cards.slice(0, 4).map((card) => (
-                  <button key={card.id} onClick={() => setSelectedCard(card)} type="button">
-                    <span>{severityWord(card)}</span>
-                    <strong>{card.title}</strong>
-                  </button>
-                ))}
-              </div>
-            </aside>
-          </section>
-        </section>
-
-        <section className={`view ${activeTab === 'data' ? 'active' : ''}`}>
-          {brief && <SourceTable sources={brief.sources} />}
-          <section className="verify-panel">
-            <div>
-              <span className="mini-label">Like Mission Control</span>
-              <h2>Evidence before claims</h2>
-              <p>
-                Each card keeps its source labels. Live means a public feed answered. Recent cache means it came from the local lakehouse
-                snapshot. Imputed means the app is showing a clue, not a direct measurement.
-              </p>
-            </div>
-            <div className="proof-steps">
-              <div>
-                <CheckCircle2 aria-hidden="true" size={18} />
-                <span>Source badge</span>
-              </div>
-              <div>
-                <Search aria-hidden="true" size={18} />
-                <span>Evidence drawer</span>
-              </div>
-              <div>
-                <ShieldAlert aria-hidden="true" size={18} />
-                <span>Official signs decide safety</span>
-              </div>
-            </div>
-          </section>
-        </section>
-
-        <section className={`view ${activeTab === 'learn' ? 'active' : ''}`}>
-          <section className="learn-grid">
-            <article>
-              <Compass aria-hidden="true" size={22} />
-              <h2>What is a signal?</h2>
-              <p>A signal is a clue: waves, rain, tides, lab tests, algae data, or a model pattern.</p>
-            </article>
-            <article>
-              <Sparkles aria-hidden="true" size={22} />
-              <h2>What is imputed?</h2>
-              <p>It means the app filled in a careful estimate. It is useful, but it is not the same as a sensor reading.</p>
-            </article>
-            <article>
-              <HelpCircle aria-hidden="true" size={22} />
-              <h2>What is confidence?</h2>
-              <p>High confidence has stronger evidence. Low confidence means the app is only pointing to a clue.</p>
-            </article>
-          </section>
-        </section>
-      </main>
-
-      {selectedCard && (
-        <div className="drawer-backdrop" onClick={() => setSelectedCard(null)}>
-          <aside className="drawer" onClick={(event) => event.stopPropagation()}>
-            <button className="drawer-close" onClick={() => setSelectedCard(null)} type="button">
-              <X aria-hidden="true" size={18} />
-            </button>
-            <span className="mini-label">Evidence card</span>
-            <h2>{selectedCard.title}</h2>
-            <p className="drawer-summary">{selectedCard.summary}</p>
-            <div className="drawer-pills">
-              <StatusPill tone={selectedCard.freshness} />
-              <StatusPill tone={selectedCard.evidence_kind} />
-              <StatusPill tone={selectedCard.confidence} label={`${selectedCard.confidence} confidence`} />
-            </div>
-            <div className="drawer-section">
-              <h3>Kid version</h3>
-              <p>{kidSummary(selectedCard)}</p>
-            </div>
-            {selectedCard.observations.length > 0 && (
-              <div className="drawer-section">
-                <h3>Numbers and notes</h3>
-                {selectedCard.observations.map((item, index) => (
-                  <div className="drawer-row" key={`${item.source_id}-${item.label}-${index}`}>
-                    <span>{item.label}</span>
-                    <strong>
-                      {String(item.value ?? 'n/a')}
-                      {item.units ? ` ${item.units}` : ''}
-                    </strong>
-                  </div>
-                ))}
-              </div>
-            )}
-            {selectedCard.why && (
-              <div className="drawer-section">
-                <h3>Why the app says this</h3>
-                <p>{selectedCard.why}</p>
-              </div>
-            )}
-            <div className="drawer-section">
-              <h3>Source IDs</h3>
-              <p className="mono-line">{selectedCard.source_ids.join(', ') || 'none'}</p>
-            </div>
-          </aside>
         </div>
-      )}
+      </div>
+
+      {/* FOOTER */}
+      <div style={{ background: "#163A5F", color: "#fff", textAlign: "center", padding: "30px 22px", marginTop: "30px", borderTop: "5px solid #FFD23F" }}>
+        <div style={{ fontSize: "40px" }}>🌊🦦🐚</div>
+        <p style={{ fontWeight: 800, fontSize: "17px", margin: "10px 0 4px" }}>Monterey Bay Today — your daily window on the ocean.</p>
+        <p style={{ fontWeight: 700, fontSize: "14px", opacity: 0.7, margin: 0 }}>Always explore tide pools with a grown-up, and put every creature back where you found it. 💙</p>
+      </div>
+
     </div>
   );
 }
