@@ -2,6 +2,8 @@
 
 A public-first "what is happening in Monterey Bay today" app. It reads the existing Monterey Bay AI Lab lakehouse and semantic-shadow outputs as read-only inputs, then keeps its own refresh cache in this project.
 
+Live site: https://jdinneen.github.io/monterey-bay-today/
+
 ## Run Locally
 
 Backend:
@@ -28,4 +30,3 @@ Open `http://127.0.0.1:5173`.
 - Writes only to `data/cache/` inside this project.
 - Labels every item as observed, model-derived, imputed, digest-only, or blocked.
 - Shows freshness so stale data is visible instead of silently treated as live.
-
