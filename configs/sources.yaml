@@ -1,0 +1,62 @@
+app:
+  region:
+    id: monterey_bay
+    name: Monterey Bay
+    timezone: America/Los_Angeles
+    center:
+      lat: 36.8000
+      lon: -121.9000
+    bbox:
+      min_lat: 36.35
+      max_lat: 37.10
+      min_lon: -122.35
+      max_lon: -121.70
+
+local_sources:
+  - id: mission_control_snapshot
+    title: Mission Control published evidence snapshot
+    kind: mission_control_json
+    path: "${MBAL_PROJECT_ROOT}/mbal-mission-control/data.json"
+    freshness_hours: 24
+    serving_allowed: true
+  - id: source_inventory
+    title: Lakehouse source inventory
+    kind: source_inventory_json
+    path: "${MBAL_LAKEHOUSE_DIR}/silver/source_inventory/source_inventory.json"
+    freshness_hours: 168
+    serving_allowed: true
+  - id: signal_catalog
+    title: Signal catalog
+    kind: yaml
+    path: "${MBAL_PROJECT_ROOT}/signals/catalog.yaml"
+    freshness_hours: 168
+    serving_allowed: true
+  - id: semantic_shadow_summary
+    title: Semantic shadow discovery summary
+    kind: markdown
+    path: "${MBAL_SHADOW_DIR}/gold/discovery_runs/latest_summary.md"
+    freshness_hours: 168
+    serving_allowed: true
+
+live_sources:
+  - id: nws_alerts_ca
+    title: National Weather Service active alerts
+    kind: nws_alerts
+    url: "https://api.weather.gov/alerts/active?area=CA"
+    freshness_minutes: 30
+    serving_allowed: true
+  - id: coops_monterey_water_level
+    title: NOAA CO-OPS Monterey water level
+    kind: coops_water_level
+    station: "9413450"
+    url: "https://api.tidesandcurrents.noaa.gov/api/prod/datagetter"
+    freshness_minutes: 30
+    serving_allowed: true
+  - id: ndbc_46042
+    title: NDBC 46042 Monterey Bay buoy
+    kind: ndbc_realtime
+    station: "46042"
+    url: "https://www.ndbc.noaa.gov/data/realtime2/46042.txt"
+    freshness_minutes: 60
+    serving_allowed: true
+

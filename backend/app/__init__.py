@@ -1,0 +1,2 @@
+"""Monterey Bay Today backend."""
+

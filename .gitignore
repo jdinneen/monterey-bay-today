@@ -1,0 +1,13 @@
+.venv/
+__pycache__/
+.pytest_cache/
+node_modules/
+dist/
+.vite/
+frontend/tsconfig.tsbuildinfo
+data/cache/*.json
+data/cache/*.sqlite
+data/cache/*.sqlite-*
+data/cache/*.log
+.env
+.env.*
