@@ -85,11 +85,30 @@ export default function App() {
     if (oceanCard) {
       for (const obs of oceanCard.observations) {
         const lbl = obs.label.toLowerCase();
-        if (lbl.includes('air')) airTemp = Math.round(Number(obs.value)) || airTemp;
-        if (lbl.includes('water')) waterTemp = Math.round(Number(obs.value)) || waterTemp;
-        if (lbl.includes('wave')) waveHeight = Math.round(Number(obs.value)) || waveHeight;
-        if (lbl.includes('wind')) windSpeed = Math.round(Number(obs.value)) || windSpeed;
-        if (lbl.includes('tide') && typeof obs.value === 'string') tideState = obs.value;
+
+        if (lbl.includes('air temp')) {
+          let val = Number(obs.value);
+          if (isNaN(val)) continue;
+          if (obs.units === 'degC' || obs.units === 'C') val = val * 9 / 5 + 32;
+          airTemp = Math.round(val);
+        } else if (lbl.includes('water temp')) {
+          let val = Number(obs.value);
+          if (isNaN(val)) continue;
+          if (obs.units === 'degC' || obs.units === 'C') val = val * 9 / 5 + 32;
+          waterTemp = Math.round(val);
+        } else if (lbl.includes('wave')) {
+          let val = Number(obs.value);
+          if (isNaN(val)) continue;
+          if (obs.units === 'm') val = val * 3.28084;
+          waveHeight = Math.round(val);
+        } else if (lbl.includes('wind')) {
+          let val = Number(obs.value);
+          if (isNaN(val)) continue;
+          if (obs.units === 'm/s') val = val * 2.23694;
+          windSpeed = Math.round(val);
+        } else if (lbl.includes('tide') && typeof obs.value === 'string') {
+          tideState = obs.value;
+        }
       }
     }
   }
