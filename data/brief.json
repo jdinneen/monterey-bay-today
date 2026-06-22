@@ -1,0 +1,408 @@
+{
+  "region_id": "monterey_bay",
+  "region_name": "Monterey Bay",
+  "generated_at": "2026-06-22T11:19:19.028756-07:00",
+  "headline": "1 Monterey Bay area weather or marine alert(s) are active.",
+  "cards": [
+    {
+      "id": "active_alerts",
+      "title": "Active Alerts",
+      "summary": "1 Monterey Bay area weather or marine alert(s) are active.",
+      "severity": "elevated",
+      "confidence": "high",
+      "evidence_kind": "observed",
+      "freshness": "live",
+      "source_ids": [
+        "nws_alerts_ca"
+      ],
+      "observations": [
+        {
+          "source_id": "nws_alerts_ca",
+          "label": "Beach Hazards Statement",
+          "value": "Beach Hazards Statement issued June 22 at 8:44AM PDT until June 24 at 5:00PM PDT by NWS San Francisco CA",
+          "units": null,
+          "observed_at": "2026-06-22T08:44:00-07:00",
+          "freshness": "live",
+          "evidence_kind": "observed",
+          "confidence": "high",
+          "details": {
+            "severity": "Moderate",
+            "certainty": "Likely",
+            "urgency": "Expected",
+            "area": "San Francisco; Coastal North Bay Including Point Reyes National Seashore; San Francisco Peninsula Coast; Northern Monterey Bay; Southern Monterey Bay and Big Sur Coast",
+            "ends": "2026-06-24T17:00:00-07:00"
+          }
+        }
+      ],
+      "why": "NWS active alerts mention Monterey Bay area places or nearby coastal zones."
+    },
+    {
+      "id": "ocean_now",
+      "title": "Ocean Now",
+      "summary": "Significant wave height: 2.0 m; Wind speed: 4.0 m/s; Water temperature: 16.2 degC; Monterey water level: 1.85 ft MLLW",
+      "severity": "info",
+      "confidence": "high",
+      "evidence_kind": "observed",
+      "freshness": "live",
+      "source_ids": [
+        "ndbc_46042",
+        "coops_monterey_water_level"
+      ],
+      "observations": [
+        {
+          "source_id": "ndbc_46042",
+          "label": "Significant wave height",
+          "value": 2.0,
+          "units": "m",
+          "observed_at": "2026-06-22T16:50:00+00:00",
+          "freshness": "live",
+          "evidence_kind": "observed",
+          "confidence": "high",
+          "details": {
+            "station": "46042"
+          }
+        },
+        {
+          "source_id": "ndbc_46042",
+          "label": "Wind speed",
+          "value": 4.0,
+          "units": "m/s",
+          "observed_at": "2026-06-22T16:50:00+00:00",
+          "freshness": "live",
+          "evidence_kind": "observed",
+          "confidence": "high",
+          "details": {
+            "station": "46042"
+          }
+        },
+        {
+          "source_id": "ndbc_46042",
+          "label": "Water temperature",
+          "value": 16.2,
+          "units": "degC",
+          "observed_at": "2026-06-22T16:50:00+00:00",
+          "freshness": "live",
+          "evidence_kind": "observed",
+          "confidence": "high",
+          "details": {
+            "station": "46042"
+          }
+        },
+        {
+          "source_id": "coops_monterey_water_level",
+          "label": "Monterey water level",
+          "value": 1.85,
+          "units": "ft MLLW",
+          "observed_at": "2026-06-22 10:12",
+          "freshness": "live",
+          "evidence_kind": "observed",
+          "confidence": "high",
+          "details": {
+            "station": "9413450",
+            "sigma": "0.049",
+            "quality": "p"
+          }
+        }
+      ],
+      "why": "Buoy 46042 and the Monterey tide gauge are direct public observations."
+    },
+    {
+      "id": "beach_water_quality",
+      "title": "Beach Water Quality",
+      "summary": "The calibrated decision rule turns the model into an advisory threshold chosen on validation, then read on the 2022+ test era.",
+      "severity": "watch",
+      "confidence": "high",
+      "evidence_kind": "model",
+      "freshness": "recent-cache",
+      "source_ids": [
+        "mission_control_snapshot",
+        "signal_catalog"
+      ],
+      "observations": [
+        {
+          "source_id": "mission_control_snapshot",
+          "label": "Deployable bacteria advisory rule catches most exceedances",
+          "value": "recall 0.8645 \u00b7 precision 0.2301",
+          "units": null,
+          "observed_at": null,
+          "freshness": "recent-cache",
+          "evidence_kind": "model",
+          "confidence": "high",
+          "details": {
+            "tau": 0.0635,
+            "tp": 7780,
+            "fp": 26026,
+            "fn": 1219,
+            "tn": 54296,
+            "recall": 0.8645,
+            "precision": 0.2301,
+            "flag_rate": 0.3785,
+            "false_advisories_per_caught": 3.35
+          }
+        }
+      ],
+      "why": "No fabricated dollar/illness counts. The trade-off is stated in operational units (exceedances caught vs false advisories) + the DCA-implied cost ratio. A site that wants fewer closures raises tau (toward the max-precision point); a site prioritising public health lowers it (toward max-detection). EPA recreational-water practice errs toward warning, i.e. a LOW tau, which this rule reflects."
+    },
+    {
+      "id": "hab_domoic_acid",
+      "title": "HAB / Domoic Acid",
+      "summary": "The updated domoic-acid result is strongest on the decision-relevant toxic-onset slice: prior-clean pier visits where persistence is degenerate.",
+      "severity": "watch",
+      "confidence": "medium",
+      "evidence_kind": "model",
+      "freshness": "recent-cache",
+      "source_ids": [
+        "mission_control_snapshot",
+        "source_inventory"
+      ],
+      "observations": [
+        {
+          "source_id": "mission_control_snapshot",
+          "label": "Domoic-acid toxic-onset forecast clears the scoped gate",
+          "value": "onset AP 0.1347 vs seasonal_naive 0.0259",
+          "units": null,
+          "observed_at": null,
+          "freshness": "recent-cache",
+          "evidence_kind": "model",
+          "confidence": "medium",
+          "details": {
+            "n": 1785,
+            "events": 34,
+            "model_ap": 0.1347,
+            "strongest_baseline": "seasonal_naive",
+            "strongest_baseline_ap": 0.0259,
+            "margin_ap": 0.1089,
+            "ci95": [
+              0.0566,
+              0.2078
+            ],
+            "perm_p": 0.002,
+            "pooled_model_ap": 0.2034,
+            "pooled_best_baseline_ap": 0.1383,
+            "loso_model_beats_seasonal": "8/8"
+          }
+        }
+      ],
+      "why": "Scope discipline: this promotes the prior-clean onset unit, not the older pooled persistence comparison or the broken C-HARM framing."
+    },
+    {
+      "id": "shadow_watchlist",
+      "title": "Shadow Watchlist",
+      "summary": "Watchlist lead: whale target inat_mammal_mortality_daily_event_any is associated with rawlh_human_event_roll30.",
+      "severity": "info",
+      "confidence": "low",
+      "evidence_kind": "imputed",
+      "freshness": "imputed",
+      "source_ids": [
+        "semantic_shadow_summary"
+      ],
+      "observations": [
+        {
+          "source_id": "semantic_shadow_summary",
+          "label": "Shadow discovery status",
+          "value": "watchlist only",
+          "units": null,
+          "observed_at": null,
+          "freshness": "imputed",
+          "evidence_kind": "imputed",
+          "confidence": "low",
+          "details": {}
+        }
+      ],
+      "why": "Semantic-shadow findings are useful for discovery, but they are not promoted as public safety claims."
+    },
+    {
+      "id": "source_coverage",
+      "title": "Source Coverage",
+      "summary": "Local lakehouse has 6 relevant source families ready for the brief.",
+      "severity": "info",
+      "confidence": "high",
+      "evidence_kind": "status",
+      "freshness": "recent-cache",
+      "source_ids": [
+        "source_inventory"
+      ],
+      "observations": [
+        {
+          "source_id": "source_inventory",
+          "label": "Matched local sources",
+          "value": "Heal the Bay Beach Report Card public app grades and metadata",
+          "units": null,
+          "observed_at": null,
+          "freshness": "recent-cache",
+          "evidence_kind": "status",
+          "confidence": "high",
+          "details": {}
+        },
+        {
+          "source_id": "source_inventory",
+          "label": "Matched local sources",
+          "value": "BEACON beach advisories/closures normalization",
+          "units": null,
+          "observed_at": null,
+          "freshness": "recent-cache",
+          "evidence_kind": "status",
+          "confidence": "high",
+          "details": {}
+        },
+        {
+          "source_id": "source_inventory",
+          "label": "Matched local sources",
+          "value": "C-HARM statewide marine HAB predictions",
+          "units": null,
+          "observed_at": null,
+          "freshness": "recent-cache",
+          "evidence_kind": "status",
+          "confidence": "high",
+          "details": {}
+        },
+        {
+          "source_id": "source_inventory",
+          "label": "Matched local sources",
+          "value": "California beach postings, closures, and advisories",
+          "units": null,
+          "observed_at": null,
+          "freshness": "recent-cache",
+          "evidence_kind": "status",
+          "confidence": "high",
+          "details": {}
+        },
+        {
+          "source_id": "source_inventory",
+          "label": "Matched local sources",
+          "value": "California beach detail information",
+          "units": null,
+          "observed_at": null,
+          "freshness": "recent-cache",
+          "evidence_kind": "status",
+          "confidence": "high",
+          "details": {}
+        }
+      ],
+      "why": "The source inventory tells the app what local evidence exists before any live feed succeeds."
+    }
+  ],
+  "map_points": [
+    {
+      "id": "santa_cruz",
+      "label": "Santa Cruz",
+      "lat": 36.9741,
+      "lon": -122.0308,
+      "severity": "elevated",
+      "summary": "North bay beaches and nearshore signals."
+    },
+    {
+      "id": "moss_landing",
+      "label": "Moss Landing",
+      "lat": 36.8044,
+      "lon": -121.7869,
+      "severity": "watch",
+      "summary": "Harbor, slough, and central bay signal point."
+    },
+    {
+      "id": "monterey",
+      "label": "Monterey",
+      "lat": 36.6002,
+      "lon": -121.8947,
+      "severity": "elevated",
+      "summary": "South bay tide, beaches, and pier context."
+    }
+  ],
+  "sources": [
+    {
+      "id": "mission_control_snapshot",
+      "title": "Mission Control published evidence snapshot",
+      "kind": "mission_control_json",
+      "freshness": "recent-cache",
+      "serving_allowed": true,
+      "path": "C:\\Users\\jondi\\AI-Machine\\projects\\mbal-mission-control\\data.json",
+      "url": null,
+      "checked_at": "2026-06-22T18:19:19.040609+00:00",
+      "observed_at": "2026-06-22T14:02:39.546788+00:00",
+      "age_minutes": 256.7,
+      "message": "available"
+    },
+    {
+      "id": "source_inventory",
+      "title": "Lakehouse source inventory",
+      "kind": "source_inventory_json",
+      "freshness": "recent-cache",
+      "serving_allowed": true,
+      "path": "C:\\Users\\jondi\\AI-Machine\\projects\\lakehouse\\silver\\source_inventory\\source_inventory.json",
+      "url": null,
+      "checked_at": "2026-06-22T18:19:19.040609+00:00",
+      "observed_at": "2026-06-22T02:09:19.810182+00:00",
+      "age_minutes": 970.0,
+      "message": "available"
+    },
+    {
+      "id": "signal_catalog",
+      "title": "Signal catalog",
+      "kind": "yaml",
+      "freshness": "recent-cache",
+      "serving_allowed": true,
+      "path": "C:\\Users\\jondi\\AI-Machine\\projects\\signals\\catalog.yaml",
+      "url": null,
+      "checked_at": "2026-06-22T18:19:19.040609+00:00",
+      "observed_at": "2026-06-22T04:40:41.296515+00:00",
+      "age_minutes": 818.6,
+      "message": "available"
+    },
+    {
+      "id": "semantic_shadow_summary",
+      "title": "Semantic shadow discovery summary",
+      "kind": "markdown",
+      "freshness": "recent-cache",
+      "serving_allowed": true,
+      "path": "C:\\Users\\jondi\\AI-Machine\\projects\\lakehouse\\semantic_shadow\\gold\\discovery_runs\\latest_summary.md",
+      "url": null,
+      "checked_at": "2026-06-22T18:19:19.040609+00:00",
+      "observed_at": "2026-06-22T06:40:10.703957+00:00",
+      "age_minutes": 699.1,
+      "message": "available"
+    },
+    {
+      "id": "nws_alerts_ca",
+      "title": "National Weather Service active alerts",
+      "kind": "nws_alerts",
+      "freshness": "live",
+      "serving_allowed": true,
+      "path": null,
+      "url": "https://api.weather.gov/alerts/active?area=CA",
+      "checked_at": "2026-06-22T17:17:02.688198+00:00",
+      "observed_at": "2026-06-22T08:44:00-07:00",
+      "age_minutes": null,
+      "message": "1 Monterey Bay area alerts"
+    },
+    {
+      "id": "coops_monterey_water_level",
+      "title": "NOAA CO-OPS Monterey water level",
+      "kind": "coops_water_level",
+      "freshness": "live",
+      "serving_allowed": true,
+      "path": null,
+      "url": "https://api.tidesandcurrents.noaa.gov/api/prod/datagetter",
+      "checked_at": "2026-06-22T17:17:03.069754+00:00",
+      "observed_at": "2026-06-22 10:12",
+      "age_minutes": null,
+      "message": "latest Monterey tide gauge water level"
+    },
+    {
+      "id": "ndbc_46042",
+      "title": "NDBC 46042 Monterey Bay buoy",
+      "kind": "ndbc_realtime",
+      "freshness": "live",
+      "serving_allowed": true,
+      "path": null,
+      "url": "https://www.ndbc.noaa.gov/data/realtime2/46042.txt",
+      "checked_at": "2026-06-22T17:17:03.367416+00:00",
+      "observed_at": "2026-06-22T16:50:00+00:00",
+      "age_minutes": null,
+      "message": "latest Monterey Bay buoy observation"
+    }
+  ],
+  "notes": [
+    "This is not an official beach closure, weather warning, or emergency notice.",
+    "Imputed and shadow signals are labeled separately from direct observations."
+  ]
+}
